@@ -170,28 +170,28 @@ function extractData(csvData) {
             data.kumuliert.push(0);
         }
         
-        // Kontostand
-        let kontostandRowIndex = -1;
+        // Kontostand 2025 (suche nach "kontostand 25")
+        let kontostand2025RowIndex = -1;
         for (let i = 0; i < csvData.length; i++) {
-            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kontostand')) {
-                kontostandRowIndex = i;
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kontostand 25')) {
+                kontostand2025RowIndex = i;
                 break;
             }
         }
         
         data.kontostand = [];
-        if (kontostandRowIndex >= 0 && csvData[kontostandRowIndex]) {
-            const kontostandRow = csvData[kontostandRowIndex];
-            console.log('🏦 Kontostand Zeile gefunden bei Index', kontostandRowIndex, ':', kontostandRow);
+        if (kontostand2025RowIndex >= 0 && csvData[kontostand2025RowIndex]) {
+            const kontostand2025Row = csvData[kontostand2025RowIndex];
+            console.log('🏦 Kontostand 2025 Zeile gefunden bei Index', kontostand2025RowIndex, ':', kontostand2025Row);
             for (let i = 1; i <= 12; i++) {
-                if (kontostandRow[i] !== undefined) {
-                    const value = parseGermanNumber(kontostandRow[i]);
+                if (kontostand2025Row[i] !== undefined) {
+                    const value = parseGermanNumber(kontostand2025Row[i]);
                     data.kontostand.push(value);
                     if (data.kontostand.length >= 6) break;
                 }
             }
         } else {
-            console.log('⚠️ Kontostand-Zeile nicht gefunden, setze Standard-Werte...');
+            console.log('⚠️ Kontostand 2025-Zeile nicht gefunden, setze Standard-Werte...');
             for (let i = 0; i < 6; i++) {
                 data.kontostand.push(50000 - (i * 1000));
             }
@@ -199,6 +199,37 @@ function extractData(csvData) {
         
         while (data.kontostand.length < 6) {
             data.kontostand.push(0);
+        }
+        
+        // Kontostand 2024 (suche nach "kontostand 24")
+        let kontostand2024RowIndex = -1;
+        for (let i = 0; i < csvData.length; i++) {
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kontostand 24')) {
+                kontostand2024RowIndex = i;
+                break;
+            }
+        }
+        
+        data.kontostand2024 = [];
+        if (kontostand2024RowIndex >= 0 && csvData[kontostand2024RowIndex]) {
+            const kontostand2024Row = csvData[kontostand2024RowIndex];
+            console.log('🏦 Kontostand 2024 Zeile gefunden bei Index', kontostand2024RowIndex, ':', kontostand2024Row);
+            for (let i = 1; i <= 12; i++) {
+                if (kontostand2024Row[i] !== undefined) {
+                    const value = parseGermanNumber(kontostand2024Row[i]);
+                    data.kontostand2024.push(value);
+                    if (data.kontostand2024.length >= 12) break;
+                }
+            }
+        } else {
+            console.log('⚠️ Kontostand 2024-Zeile nicht gefunden');
+            for (let i = 0; i < 12; i++) {
+                data.kontostand2024.push(0);
+            }
+        }
+        
+        while (data.kontostand2024.length < 12) {
+            data.kontostand2024.push(0);
         }
         
         // Gesamtsummen berechnen
@@ -209,7 +240,8 @@ function extractData(csvData) {
         console.log('📊 Einnahmen:', data.einnahmen);
         console.log('📊 Ausgaben:', data.ausgaben);
         console.log('📊 Kumuliert:', data.kumuliert);
-        console.log('📊 Kontostand:', data.kontostand);
+        console.log('📊 Kontostand 2025:', data.kontostand);
+        console.log('📊 Kontostand 2024:', data.kontostand2024);
         console.log('📊 Gesamt Einnahmen:', data.gesamtEinnahmen);
         console.log('📊 Gesamt Ausgaben:', data.gesamtAusgaben);
         console.log('📊 Ergebnis:', data.gesamtEinnahmen - data.gesamtAusgaben);
@@ -297,70 +329,6 @@ function generateHTML(data, quarters) {
         template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
         template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
         
-        // Kontostand-Vergleich 2024 vs 2025
-        let kontostand2024RowIndex = -1;
-        for (let i = 0; i < csvData.length; i++) {
-            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kontostand 24')) {
-                kontostand2024RowIndex = i;
-                break;
-            }
-        }
-        
-        data.kontostand2024 = [];
-        if (kontostand2024RowIndex >= 0 && csvData[kontostand2024RowIndex]) {
-            const kontostand2024Row = csvData[kontostand2024RowIndex];
-            console.log('🏦 Kontostand 2024 Zeile gefunden bei Index', kontostand2024RowIndex, ':', kontostand2024Row);
-            for (let i = 1; i <= 12; i++) {
-                if (kontostand2024Row[i] !== undefined) {
-                    const value = parseGermanNumber(kontostand2024Row[i]);
-                    data.kontostand2024.push(value);
-                    if (data.kontostand2024.length >= 12) break;
-                }
-            }
-        } else {
-            console.log('⚠️ Kontostand 2024-Zeile nicht gefunden');
-            for (let i = 0; i < 12; i++) {
-                data.kontostand2024.push(0);
-            }
-        }
-        
-        while (data.kontostand2024.length < 12) {
-            data.kontostand2024.push(0);
-        }
-        
-        console.log('🏦 Kontostand 2024:', data.kontostand2024);
-        
-        // Gesamtsummen ersetzen
-        const gesamtErgebnis = data.gesamtEinnahmen - data.gesamtAusgaben;
-        template = template.replace('{{GESAMT_EINNAHMEN}}', formatNumber(data.gesamtEinnahmen));
-        template = template.replace('{{GESAMT_AUSGABEN}}', formatNumber(data.gesamtAusgaben));
-        template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
-        template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
-        
-        // Kontostand-Vergleichswerte
-        template = template.replace('{{KONTOSTAND_2024_Q1}}', formatNumber(data.kontostand2024[2])); // März 2024
-        template = template.replace('{{KONTOSTAND_2024_Q2}}', formatNumber(data.kontostand2024[5])); // Juni 2024
-        template = template.replace('{{KONTOSTAND_2025_Q1}}', formatNumber(data.kontostand[2])); // März 2025
-        template = template.replace('{{KONTOSTAND_2025_Q2}}', formatNumber(data.kontostand[5])); // Juni 2025
-        
-        // Differenzen berechnen
-        const diffQ1 = data.kontostand[2] - data.kontostand2024[2];
-        const diffQ2 = data.kontostand[5] - data.kontostand2024[5];
-        
-        template = template.replace('{{DIFF_Q1}}', formatNumber(Math.abs(diffQ1)));
-        template = template.replace('{{DIFF_Q2}}', formatNumber(Math.abs(diffQ2)));
-        template = template.replace('{{DIFF_Q1_CLASS}}', diffQ1 >= 0 ? 'positive' : 'negative');
-        template = template.replace('{{DIFF_Q2_CLASS}}', diffQ2 >= 0 ? 'positive' : 'negative');
-        template = template.replace('{{DIFF_Q1_SIGN}}', diffQ1 >= 0 ? '+' : '-');
-        template = template.replace('{{DIFF_Q2_SIGN}}', diffQ2 >= 0 ? '+' : '-');
-        
-        // Gesamtsummen ersetzen
-        const gesamtErgebnis = data.gesamtEinnahmen - data.gesamtAusgaben;
-        template = template.replace('{{GESAMT_EINNAHMEN}}', formatNumber(data.gesamtEinnahmen));
-        template = template.replace('{{GESAMT_AUSGABEN}}', formatNumber(data.gesamtAusgaben));
-        template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
-        template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
-        
         // Kontostand-Vergleichswerte
         console.log('🔧 Setze Kontostand-Vergleichswerte...');
         console.log('2024 Q1 (März):', data.kontostand2024[2]);
@@ -386,6 +354,8 @@ function generateHTML(data, quarters) {
         template = template.replace('{{DIFF_Q2_CLASS}}', diffQ2 >= 0 ? 'positive' : 'negative');
         template = template.replace('{{DIFF_Q1_SIGN}}', diffQ1 >= 0 ? '+' : '-');
         template = template.replace('{{DIFF_Q2_SIGN}}', diffQ2 >= 0 ? '+' : '-');
+        
+        // Quartale generieren (ohne Kontostand)
         let quartersHTML = '';
         quarters.forEach(quarter => {
             if (quarter.hasData) {
