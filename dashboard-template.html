@@ -105,120 +105,106 @@ margin-bottom: 5px;
 color: #7f8c8d;
 font-size: 0.9em;
 }
-.barometer-section {
+.kontostand-section {
 background: #f9f7f4;
 padding: 25px;
-border-left: 5px solid #e67e22;
+border-left: 5px solid #9b59b6;
 margin: 20px 0;
 border-radius: 10px;
 max-width: 1200px;
 margin-left: auto;
 margin-right: auto;
 }
-.barometer-section h2 {
+.kontostand-section h2 {
 color: #2c3e50;
 margin-bottom: 20px;
 font-size: 1.4em;
 text-align: center;
 }
-.barometer-container {
-display: flex;
-justify-content: center;
-align-items: center;
+.kontostand-comparison {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 20px;
 }
-.barometer-visual {
-position: relative;
-width: 280px;
-height: 280px;
-margin: 0 auto;
-}
-.barometer-circle {
-width: 220px;
-height: 220px;
-border-radius: 50%;
-background: conic-gradient(
-  from -90deg,
-  #e8e5e0 0deg,
-  #e8e5e0 calc((100 - var(--konto-percent)) * 3.6deg),
-  var(--konto-color) calc((100 - var(--konto-percent)) * 3.6deg),
-  var(--konto-color) 360deg
-);
-position: relative;
-margin: 30px auto;
-box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-display: flex;
-align-items: center;
-justify-content: center;
-}
-.barometer-inner {
-width: 160px;
-height: 160px;
+.quarter-comparison {
 background: #fefcf8;
-border-radius: 50%;
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-box-shadow: inset 0 5px 15px rgba(0,0,0,0.1);
-position: relative;
+border-radius: 15px;
+padding: 20px;
+box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
-.kontostand-amount {
-font-size: 1.8em;
-font-weight: 900;
-color: var(--konto-color);
+.quarter-title {
+font-size: 1.3em;
+font-weight: bold;
+color: #2c3e50;
+margin-bottom: 15px;
+text-align: center;
+}
+.year-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 10px;
+padding: 10px;
+border-radius: 8px;
+}
+.year-row.year-2024 {
+background: rgba(52, 152, 219, 0.1);
+}
+.year-row.year-2025 {
+background: rgba(46, 204, 113, 0.1);
+}
+.year-label {
+font-weight: 600;
+font-size: 1.1em;
+}
+.year-2024 .year-label {
+color: #3498db;
+}
+.year-2025 .year-label {
+color: #27ae60;
+}
+.year-amount {
+font-size: 1.2em;
+font-weight: bold;
 font-family: 'Courier New', monospace;
 }
-.kontostand-label {
-font-size: 0.9em;
-color: #7f8c8d;
-margin-top: 5px;
+.year-2024 .year-amount {
+color: #3498db;
 }
-.trend-indicator {
-position: absolute;
-top: -15px;
-right: -15px;
-width: 50px;
-height: 50px;
-background: var(--trend-color);
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 1.5em;
-color: white;
-box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-animation: pulse 2s infinite;
+.year-2025 .year-amount {
+color: #27ae60;
 }
-@keyframes pulse {
-0% { transform: scale(1); }
-50% { transform: scale(1.05); }
-100% { transform: scale(1); }
-}
-.barometer-info {
-position: absolute;
-bottom: -10px;
-left: 50%;
-transform: translateX(-50%);
+.difference-row {
+border-top: 2px solid rgba(44, 62, 80, 0.1);
+padding-top: 15px;
+margin-top: 15px;
 text-align: center;
-font-size: 0.85em;
-color: #7f8c8d;
 }
-.trend-text {
-color: var(--trend-color);
-font-weight: bold;
-}
-.percentage-display {
-position: absolute;
-top: -20px;
-left: 50%;
-transform: translateX(-50%);
-background: var(--konto-color);
-color: white;
-padding: 5px 12px;
-border-radius: 15px;
+.difference-label {
 font-size: 0.9em;
+color: #7f8c8d;
+margin-bottom: 5px;
+}
+.difference-amount {
+font-size: 1.4em;
 font-weight: bold;
-box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+font-family: 'Courier New', monospace;
+}
+.difference-amount.positive {
+color: #27ae60;
+}
+.difference-amount.negative {
+color: #e74c3c;
+}
+.difference-arrow {
+font-size: 1.2em;
+margin-left: 8px;
+}
+.positive .difference-arrow::after {
+content: '↗';
+}
+.negative .difference-arrow::after {
+content: '↘';
 }
 .quarters-container {
 display: grid;
@@ -389,20 +375,43 @@ grid-template-columns: 1fr;
 <div class="summary-amount">{{AKTUELLES_ERGEBNIS}}€</div>
 </div>
 </div>
-<div class="barometer-section">
-<h2>Kontostand-Barometer</h2>
-<div class="barometer-container">
-<div class="barometer-visual" style="--konto-percent: {{KONTOSTAND_PROZENT}}; --konto-color: {{KONTOSTAND_COLOR}}; --trend-color: {{TREND_COLOR}};">
-<div class="percentage-display">{{KONTOSTAND_PROZENT}}%</div>
-<div class="barometer-circle">
-<div class="barometer-inner">
-<div class="kontostand-amount">{{KONTOSTAND}}€</div>
-<div class="kontostand-label">Aktueller Stand</div>
-<div class="trend-indicator">{{TREND_PFEIL}}</div>
+<div class="kontostand-section">
+<h2>Kontostand-Vergleich 2024 vs 2025</h2>
+<div class="kontostand-comparison">
+<div class="quarter-comparison">
+<div class="quarter-title">Q1 - Ende März</div>
+<div class="year-row year-2024">
+<div class="year-label">2024</div>
+<div class="year-amount">{{KONTOSTAND_2024_Q1}}€</div>
+</div>
+<div class="year-row year-2025">
+<div class="year-label">2025</div>
+<div class="year-amount">{{KONTOSTAND_2025_Q1}}€</div>
+</div>
+<div class="difference-row">
+<div class="difference-label">Differenz</div>
+<div class="difference-amount {{DIFF_Q1_CLASS}}">
+{{DIFF_Q1_SIGN}}{{DIFF_Q1}}€
+<span class="difference-arrow"></span>
 </div>
 </div>
-<div class="barometer-info">
-<span class="trend-text">{{TREND_TEXT}}</span> um {{TREND_BETRAG}}€
+</div>
+<div class="quarter-comparison">
+<div class="quarter-title">Q2 - Ende Juni</div>
+<div class="year-row year-2024">
+<div class="year-label">2024</div>
+<div class="year-amount">{{KONTOSTAND_2024_Q2}}€</div>
+</div>
+<div class="year-row year-2025">
+<div class="year-label">2025</div>
+<div class="year-amount">{{KONTOSTAND_2025_Q2}}€</div>
+</div>
+<div class="difference-row">
+<div class="difference-label">Differenz</div>
+<div class="difference-amount {{DIFF_Q2_CLASS}}">
+{{DIFF_Q2_SIGN}}{{DIFF_Q2}}€
+<span class="difference-arrow"></span>
+</div>
 </div>
 </div>
 </div>
