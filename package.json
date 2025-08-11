@@ -1,0 +1,15 @@
+{
+  "name": "financial-dashboard",
+  "version": "1.0.0",
+  "description": "Automated financial dashboard",
+  "main": "update-dashboard.js",
+  "scripts": {
+    "update": "node update-dashboard.js"
+  },
+  "dependencies": {
+    "papaparse": "^5.4.1"
+  },
+  "keywords": ["dashboard", "finance", "automation"],
+  "author": "Your Name",
+  "license": "MIT"
+}
