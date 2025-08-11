@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Dashboard</title>
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+background: transparent;
+min-height: 100vh;
+padding: 20px;
+color: #333;
+}
+.container {
+max-width: 1200px;
+margin: 0 auto;
+background: transparent;
+border-radius: 0;
+box-shadow: none;
+overflow: visible;
+}
+.summary-container {
+display: flex;
+gap: 15px;
+margin: 20px 0;
+flex-wrap: wrap;
+max-width: 1200px;
+margin-left: auto;
+margin-right: auto;
+}
+.summary-card {
+flex: 1;
+min-width: 200px;
+padding: 25px;
+border-radius: 15px;
+text-align: center;
+box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+background: #faf9f6;
+font-weight: bold;
+}
+.summary-card.income .summary-amount {
+color: #27ae60;
+}
+.summary-card.expenses .summary-amount {
+color: #e74c3c;
+}
+.summary-card.result-negative .summary-amount {
+color: #e74c3c;
+}
+.summary-card.result-positive .summary-amount {
+color: #27ae60;
+}
+.summary-label {
+font-size: 0.9em;
+color: #7f8c8d;
+margin-bottom: 10px;
+letter-spacing: 1px;
+}
+.summary-amount {
+font-size: 2.2em;
+font-weight: 900;
+font-family: 'Courier New', monospace;
+}
+.info-section {
+background: #f9f7f4;
+padding: 25px;
+border-left: 5px solid #3498db;
+margin: 20px 0;
+border-radius: 10px;
+max-width: 1200px;
+margin-left: auto;
+margin-right: auto;
+}
+.info-section h2 {
+color: #2c3e50;
+margin-bottom: 15px;
+font-size: 1.4em;
+}
+.info-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 15px;
+margin-top: 15px;
+}
+.info-card {
+background: #fefcf8;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+text-align: center;
+}
+.info-card .amount {
+font-size: 1.8em;
+font-weight: bold;
+color: #3498db;
+margin-bottom: 5px;
+}
+.info-card .label {
+color: #7f8c8d;
+font-size: 0.9em;
+}
+.quarters-container {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+gap: 20px;
+margin: 20px 0;
+max-width: 1200px;
+margin-left: auto;
+margin-right: auto;
+}
+.quarter-card {
+background: #fefcf8;
+border-radius: 15px;
+box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+perspective: 1000px;
+height: 280px;
+cursor: pointer;
+transition: transform 0.3s ease;
+}
+.quarter-card:hover {
+transform: translateY(-5px);
+}
+.card-inner {
+position: relative;
+width: 100%;
+height: 100%;
+text-align: center;
+transition: transform 0.6s;
+transform-style: preserve-3d;
+}
+.quarter-card.flipped .card-inner {
+transform: rotateY(180deg);
+}
+.card-front, .card-back {
+position: absolute;
+width: 100%;
+height: 100%;
+backface-visibility: hidden;
+border-radius: 15px;
+padding: 20px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+}
+.card-front {
+background: #fefcf8;
+color: #2c3e50;
+border: 1px solid #e8e5e0;
+}
+.card-back {
+background: #faf9f6;
+color: #2c3e50;
+transform: rotateY(180deg);
+border: 1px solid #e8e5e0;
+}
+.quarter-name {
+font-size: 2em;
+font-weight: bold;
+margin-bottom: 15px;
+}
+.quarter-period {
+font-size: 1.1em;
+color: #7f8c8d;
+margin-bottom: 15px;
+}
+.quarter-status {
+font-size: 1.3em;
+font-weight: bold;
+padding: 10px 20px;
+border-radius: 20px;
+background: rgba(52, 152, 219, 0.1);
+border: 1px solid rgba(52, 152, 219, 0.2);
+}
+.status-positive {
+background: rgba(46, 204, 113, 0.1);
+color: #27ae60;
+border: 1px solid rgba(46, 204, 113, 0.3);
+}
+.status-negative {
+background: rgba(231, 76, 60, 0.1);
+color: #e74c3c;
+border: 1px solid rgba(231, 76, 60, 0.3);
+}
+.card-details {
+text-align: left;
+width: 100%;
+font-size: 0.9em;
+overflow-y: auto;
+max-height: 220px;
+}
+.detail-row {
+display: flex;
+justify-content: space-between;
+margin-bottom: 8px;
+padding-bottom: 6px;
+border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+}
+.detail-label {
+font-weight: 600;
+opacity: 0.9;
+}
+.detail-value {
+font-weight: bold;
+font-family: 'Courier New', monospace;
+}
+.detail-positive {
+color: #2ecc71;
+}
+.detail-negative {
+color: #e74c3c;
+}
+.flip-hint {
+position: absolute;
+bottom: 10px;
+right: 15px;
+font-size: 0.8em;
+opacity: 0.7;
+}
+@media (max-width: 768px) {
+.summary-container {
+flex-direction: column;
+margin: 15px 0;
+}
+.summary-card {
+min-width: auto;
+}
+.summary-amount {
+font-size: 1.8em;
+}
+.quarters-container {
+grid-template-columns: 1fr;
+margin: 15px 0;
+gap: 15px;
+}
+.quarter-card {
+height: 240px;
+}
+.quarter-name {
+font-size: 1.7em;
+}
+.quarter-status {
+font-size: 1.1em;
+}
+.container {
+margin: 10px;
+border-radius: 15px;
+}
+.info-grid {
+grid-template-columns: 1fr;
+}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="summary-container">
+<div class="summary-card income">
+<div class="summary-label">EINNAHMEN</div>
+<div class="summary-amount">{{GESAMT_EINNAHMEN}}€</div>
+</div>
+<div class="summary-card expenses">
+<div class="summary-label">AUSGABEN</div>
+<div class="summary-amount">{{GESAMT_AUSGABEN}}€</div>
+</div>
+<div class="summary-card {{RESULT_CLASS}}">
+<div class="summary-label">AKTUELLES ERGEBNIS</div>
+<div class="summary-amount">{{AKTUELLES_ERGEBNIS}}€</div>
+</div>
+</div>
+<div class="info-section">
+<h2>Zielvorgaben</h2>
+<div class="info-grid">
+<div class="info-card">
+<div class="amount">75.000€</div>
+<div class="label">Quartalsziel für Kostendeckung benötigt</div>
+</div>
+<div class="info-card">
+<div class="amount">81.000€</div>
+<div class="label">Quartalsziel für Vision mit Rücklagen für Kinder-/Jugendstelle</div>
+</div>
+</div>
+</div>
+<div class="quarters-container">
+{{QUARTERS}}
+</div>
+</div>
+<script>
+function flipCard(card) {
+card.classList.toggle('flipped');
+}
+document.addEventListener('DOMContentLoaded', function() {
+document.documentElement.style.scrollBehavior = 'smooth';
+const cards = document.querySelectorAll('.quarter-card');
+cards.forEach(card => {
+card.addEventListener('touchstart', function() {
+this.style.transform = 'translateY(-5px) scale(0.98)';
+});
+card.addEventListener('touchend', function() {
+this.style.transform = 'translateY(-5px) scale(1)';
+});
+});
+});
+</script>
+</body>
+</html>
