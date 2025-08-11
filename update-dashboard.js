@@ -297,17 +297,26 @@ function generateHTML(data, quarters) {
         template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
         template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
         
-        // Barometer-Daten (Beispielwerte - diese sollten aus der CSV kommen)
+        // Barometer-Daten für Kontostand
         const gesamtKontostand = data.kontostand[5] || 42547; // Letzter verfügbarer Kontostand
-        const ruecklagenGebunden = 25000; // Beispielwert - kann aus CSV gelesen werden
-        const freieRuecklagen = gesamtKontostand - ruecklagenGebunden;
-        const ruecklagenProzent = Math.max(0, Math.min(100, (freieRuecklagen / gesamtKontostand) * 100));
+        const vorherigerKontostand = data.kontostand[4] || 44530; // Vorheriger Monat
+        const trend = gesamtKontostand - vorherigerKontostand;
+        const trendPfeil = trend > 0 ? '↗' : trend < 0 ? '↘' : '→';
+        const trendColor = trend > 0 ? '#27ae60' : trend < 0 ? '#e74c3c' : '#f39c12';
+        const trendText = trend > 0 ? 'Steigend' : trend < 0 ? 'Fallend' : 'Stabil';
         
-        template = template.replace('{{GESAMT_KONTOSTAND}}', formatNumber(gesamtKontostand));
-        template = template.replace('{{RUECKLAGEN_GEBUNDEN}}', formatNumber(ruecklagenGebunden));
-        template = template.replace('{{RUECKLAGEN_FREI}}', formatNumber(freieRuecklagen));
-        template = template.replace('{{RUECKLAGEN_PROZENT}}', Math.round(ruecklagenProzent));
-        template = template.replace('{{RUECKLAGEN_COLOR}}', freieRuecklagen >= 0 ? '#27ae60' : '#e74c3c');
+        // Barometer-Prozent (basierend auf einem Zielwert oder Maximum)
+        const maxKontostand = 100000; // Zielwert für 100%
+        const kontoProzent = Math.max(0, Math.min(100, (gesamtKontostand / maxKontostand) * 100));
+        const kontoColor = gesamtKontostand >= 50000 ? '#27ae60' : gesamtKontostand >= 25000 ? '#f39c12' : '#e74c3c';
+        
+        template = template.replace('{{KONTOSTAND}}', formatNumber(gesamtKontostand));
+        template = template.replace('{{KONTOSTAND_PROZENT}}', Math.round(kontoProzent));
+        template = template.replace('{{KONTOSTAND_COLOR}}', kontoColor);
+        template = template.replace('{{TREND_PFEIL}}', trendPfeil);
+        template = template.replace('{{TREND_COLOR}}', trendColor);
+        template = template.replace('{{TREND_TEXT}}', trendText);
+        template = template.replace('{{TREND_BETRAG}}', formatNumber(Math.abs(trend)));
         
         // Quartale generieren (ohne Kontostand)
         let quartersHTML = '';
