@@ -9,18 +9,25 @@ on:
       - 'dashboard-template.html'
   workflow_dispatch: # Allows manual trigger
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   update-dashboard:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/checkout@v4
       with:
-        node-version: '18'
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
         
     - name: Install dependencies
       run: npm install
@@ -28,16 +35,35 @@ jobs:
     - name: Update dashboard
       run: node update-dashboard.js
       
-    - name: Commit and push changes
+    - name: Check if files changed
+      id: verify-changed-files
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push changes
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add index.html
-        git diff --staged --quiet || git commit -m "🤖 Auto-update dashboard with latest data"
+        git commit -m "🤖 Auto-update dashboard with latest data"
         git push
         
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Setup Pages
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      uses: actions/upload-pages-artifact@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+        path: '.'
+        
+    - name: Deploy to GitHub Pages
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      id: deployment
+      uses: actions/deploy-pages@v4
