@@ -105,6 +105,121 @@ margin-bottom: 5px;
 color: #7f8c8d;
 font-size: 0.9em;
 }
+.barometer-section {
+background: #f9f7f4;
+padding: 25px;
+border-left: 5px solid #e67e22;
+margin: 20px 0;
+border-radius: 10px;
+max-width: 1200px;
+margin-left: auto;
+margin-right: auto;
+}
+.barometer-section h2 {
+color: #2c3e50;
+margin-bottom: 20px;
+font-size: 1.4em;
+text-align: center;
+}
+.barometer-container {
+display: flex;
+justify-content: center;
+align-items: center;
+}
+.barometer-visual {
+position: relative;
+width: 280px;
+height: 280px;
+margin: 0 auto;
+}
+.barometer-circle {
+width: 220px;
+height: 220px;
+border-radius: 50%;
+background: conic-gradient(
+  from -90deg,
+  #e8e5e0 0deg,
+  #e8e5e0 calc((100 - var(--konto-percent)) * 3.6deg),
+  var(--konto-color) calc((100 - var(--konto-percent)) * 3.6deg),
+  var(--konto-color) 360deg
+);
+position: relative;
+margin: 30px auto;
+box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.barometer-inner {
+width: 160px;
+height: 160px;
+background: #fefcf8;
+border-radius: 50%;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+box-shadow: inset 0 5px 15px rgba(0,0,0,0.1);
+position: relative;
+}
+.kontostand-amount {
+font-size: 1.8em;
+font-weight: 900;
+color: var(--konto-color);
+font-family: 'Courier New', monospace;
+}
+.kontostand-label {
+font-size: 0.9em;
+color: #7f8c8d;
+margin-top: 5px;
+}
+.trend-indicator {
+position: absolute;
+top: -15px;
+right: -15px;
+width: 50px;
+height: 50px;
+background: var(--trend-color);
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5em;
+color: white;
+box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+animation: pulse 2s infinite;
+}
+@keyframes pulse {
+0% { transform: scale(1); }
+50% { transform: scale(1.05); }
+100% { transform: scale(1); }
+}
+.barometer-info {
+position: absolute;
+bottom: -10px;
+left: 50%;
+transform: translateX(-50%);
+text-align: center;
+font-size: 0.85em;
+color: #7f8c8d;
+}
+.trend-text {
+color: var(--trend-color);
+font-weight: bold;
+}
+.percentage-display {
+position: absolute;
+top: -20px;
+left: 50%;
+transform: translateX(-50%);
+background: var(--konto-color);
+color: white;
+padding: 5px 12px;
+border-radius: 15px;
+font-size: 0.9em;
+font-weight: bold;
+box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
 .quarters-container {
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -272,6 +387,24 @@ grid-template-columns: 1fr;
 <div class="summary-card result-negative">
 <div class="summary-label">AKTUELLES ERGEBNIS</div>
 <div class="summary-amount">-8.792€</div>
+</div>
+</div>
+<div class="barometer-section">
+<h2>Kontostand-Barometer</h2>
+<div class="barometer-container">
+<div class="barometer-visual" style="--konto-percent: 43; --konto-color: #f39c12; --trend-color: #e74c3c;">
+<div class="percentage-display">{{KONTOSTAND_PROZENT}}%</div>
+<div class="barometer-circle">
+<div class="barometer-inner">
+<div class="kontostand-amount">42.547€</div>
+<div class="kontostand-label">Aktueller Stand</div>
+<div class="trend-indicator">↘</div>
+</div>
+</div>
+<div class="barometer-info">
+<span class="trend-text">Fallend</span> um 1.984€
+</div>
+</div>
 </div>
 </div>
 <div class="info-section">
