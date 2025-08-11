@@ -2,11 +2,28 @@
 const fs = require('fs');
 const Papa = require('papaparse');
 
+// update-dashboard.js
+const fs = require('fs');
+const Papa = require('papaparse');
+
 // CSV Datei lesen
 function readCSV() {
     try {
         console.log('📖 Lese CSV-Datei...');
-        const csvData = fs.readFileSync('zahlen_aktuell.csv', 'utf8');
+        
+        // Suche nach CSV-Datei (mit einem oder zwei Punkten)
+        let csvFileName = 'zahlen_aktuell.csv';
+        if (!fs.existsSync(csvFileName)) {
+            csvFileName = 'zahlen_aktuell..csv';
+        }
+        
+        if (!fs.existsSync(csvFileName)) {
+            console.error('❌ Keine CSV-Datei gefunden! Gesucht: zahlen_aktuell.csv oder zahlen_aktuell..csv');
+            return null;
+        }
+        
+        console.log('📄 Verwende CSV-Datei:', csvFileName);
+        const csvData = fs.readFileSync(csvFileName, 'utf8');
         console.log('✅ CSV erfolgreich gelesen');
         console.log('CSV Inhalt (erste 200 Zeichen):', csvData.substring(0, 200));
         
@@ -41,32 +58,66 @@ function parseGermanNumber(str) {
 // Daten extrahieren und bereinigen
 function extractData(csvData) {
     console.log('🔍 Extrahiere Daten...');
+    console.log('📊 CSV hat', csvData.length, 'Zeilen');
+    
+    // Debug: Zeige erste paar Zeilen der CSV
+    for (let i = 0; i < Math.min(5, csvData.length); i++) {
+        console.log(`Zeile ${i}:`, csvData[i]);
+    }
+    
     const data = {};
     
     try {
-        // Monate finden - nehme die ersten 6 Spalten nach der ersten
-        const months = 6;
+        // Finde Einnahmen-Zeile (suche nach "Einnahmen" in der ersten Spalte)
+        let einnahmenRowIndex = -1;
+        for (let i = 0; i < csvData.length; i++) {
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('einnahmen')) {
+                einnahmenRowIndex = i;
+                break;
+            }
+        }
         
-        // Einnahmen (Zeile 0)
-        const einnahmenRow = csvData[0] || [];
-        console.log('💰 Einnahmen Zeile:', einnahmenRow);
         data.einnahmen = [];
-        for (let i = 1; i <= months; i++) {
-            data.einnahmen.push(parseGermanNumber(einnahmenRow[i]));
+        if (einnahmenRowIndex >= 0) {
+            const einnahmenRow = csvData[einnahmenRowIndex];
+            console.log('💰 Einnahmen Zeile gefunden bei Index', einnahmenRowIndex, ':', einnahmenRow);
+            for (let i = 1; i <= 6; i++) {
+                const value = parseGermanNumber(einnahmenRow[i]);
+                data.einnahmen.push(value);
+                console.log(`  Monat ${i}: ${einnahmenRow[i]} -> ${value}`);
+            }
+        } else {
+            console.warn('⚠️ Einnahmen-Zeile nicht gefunden!');
+            data.einnahmen = [0, 0, 0, 0, 0, 0];
         }
         
-        // Ausgaben (Zeile 1)
-        const ausgabenRow = csvData[1] || [];
-        console.log('💸 Ausgaben Zeile:', ausgabenRow);
+        // Finde Ausgaben-Zeile
+        let ausgabenRowIndex = -1;
+        for (let i = 0; i < csvData.length; i++) {
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('ausgaben')) {
+                ausgabenRowIndex = i;
+                break;
+            }
+        }
+        
         data.ausgaben = [];
-        for (let i = 1; i <= months; i++) {
-            data.ausgaben.push(parseGermanNumber(ausgabenRow[i]));
+        if (ausgabenRowIndex >= 0) {
+            const ausgabenRow = csvData[ausgabenRowIndex];
+            console.log('💸 Ausgaben Zeile gefunden bei Index', ausgabenRowIndex, ':', ausgabenRow);
+            for (let i = 1; i <= 6; i++) {
+                const value = parseGermanNumber(ausgabenRow[i]);
+                data.ausgaben.push(value);
+                console.log(`  Monat ${i}: ${ausgabenRow[i]} -> ${value}`);
+            }
+        } else {
+            console.warn('⚠️ Ausgaben-Zeile nicht gefunden!');
+            data.ausgaben = [0, 0, 0, 0, 0, 0];
         }
         
-        // Kumuliert finden (suche nach "Kumuliert" in der ersten Spalte)
+        // Finde Kumuliert-Zeile
         let kumuliertRowIndex = -1;
         for (let i = 0; i < csvData.length; i++) {
-            if (csvData[i][0] && csvData[i][0].toString().includes('Kumuliert')) {
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kumuliert')) {
                 kumuliertRowIndex = i;
                 break;
             }
@@ -75,24 +126,26 @@ function extractData(csvData) {
         data.kumuliert = [];
         if (kumuliertRowIndex >= 0) {
             const kumuliertRow = csvData[kumuliertRowIndex];
-            console.log('📈 Kumuliert Zeile:', kumuliertRow);
-            for (let i = 1; i <= months; i++) {
-                data.kumuliert.push(parseGermanNumber(kumuliertRow[i]));
+            console.log('📈 Kumuliert Zeile gefunden bei Index', kumuliertRowIndex, ':', kumuliertRow);
+            for (let i = 1; i <= 6; i++) {
+                const value = parseGermanNumber(kumuliertRow[i]);
+                data.kumuliert.push(value);
+                console.log(`  Monat ${i}: ${kumuliertRow[i]} -> ${value}`);
             }
         } else {
             // Fallback: Kumuliert selbst berechnen
             console.log('⚠️ Kumuliert-Zeile nicht gefunden, berechne selbst...');
             let cumulative = 0;
-            for (let i = 0; i < months; i++) {
+            for (let i = 0; i < 6; i++) {
                 cumulative += (data.einnahmen[i] - data.ausgaben[i]);
                 data.kumuliert.push(cumulative);
             }
         }
         
-        // Kontostand finden
+        // Finde Kontostand-Zeile
         let kontostandRowIndex = -1;
         for (let i = 0; i < csvData.length; i++) {
-            if (csvData[i][0] && csvData[i][0].toString().includes('Kontostand')) {
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kontostand')) {
                 kontostandRowIndex = i;
                 break;
             }
@@ -101,14 +154,16 @@ function extractData(csvData) {
         data.kontostand = [];
         if (kontostandRowIndex >= 0) {
             const kontostandRow = csvData[kontostandRowIndex];
-            console.log('🏦 Kontostand Zeile:', kontostandRow);
-            for (let i = 1; i <= months; i++) {
-                data.kontostand.push(parseGermanNumber(kontostandRow[i]));
+            console.log('🏦 Kontostand Zeile gefunden bei Index', kontostandRowIndex, ':', kontostandRow);
+            for (let i = 1; i <= 6; i++) {
+                const value = parseGermanNumber(kontostandRow[i]);
+                data.kontostand.push(value);
+                console.log(`  Monat ${i}: ${kontostandRow[i]} -> ${value}`);
             }
         } else {
             // Fallback: Dummy-Werte
             console.log('⚠️ Kontostand-Zeile nicht gefunden, setze Standard-Werte...');
-            for (let i = 0; i < months; i++) {
+            for (let i = 0; i < 6; i++) {
                 data.kontostand.push(50000 - (i * 1000)); // Dummy-Werte
             }
         }
@@ -118,6 +173,10 @@ function extractData(csvData) {
         data.gesamtAusgaben = data.ausgaben.reduce((a, b) => a + b, 0);
         
         console.log('✅ Daten extrahiert:');
+        console.log('📊 Einnahmen:', data.einnahmen);
+        console.log('📊 Ausgaben:', data.ausgaben);
+        console.log('📊 Kumuliert:', data.kumuliert);
+        console.log('📊 Kontostand:', data.kontostand);
         console.log('📊 Gesamt Einnahmen:', data.gesamtEinnahmen);
         console.log('📊 Gesamt Ausgaben:', data.gesamtAusgaben);
         console.log('📊 Ergebnis:', data.gesamtEinnahmen - data.gesamtAusgaben);
