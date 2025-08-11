@@ -297,7 +297,19 @@ function generateHTML(data, quarters) {
         template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
         template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
         
-        // Quartale generieren
+        // Barometer-Daten (Beispielwerte - diese sollten aus der CSV kommen)
+        const gesamtKontostand = data.kontostand[5] || 42547; // Letzter verfügbarer Kontostand
+        const ruecklagenGebunden = 25000; // Beispielwert - kann aus CSV gelesen werden
+        const freieRuecklagen = gesamtKontostand - ruecklagenGebunden;
+        const ruecklagenProzent = Math.max(0, Math.min(100, (freieRuecklagen / gesamtKontostand) * 100));
+        
+        template = template.replace('{{GESAMT_KONTOSTAND}}', formatNumber(gesamtKontostand));
+        template = template.replace('{{RUECKLAGEN_GEBUNDEN}}', formatNumber(ruecklagenGebunden));
+        template = template.replace('{{RUECKLAGEN_FREI}}', formatNumber(freieRuecklagen));
+        template = template.replace('{{RUECKLAGEN_PROZENT}}', Math.round(ruecklagenProzent));
+        template = template.replace('{{RUECKLAGEN_COLOR}}', freieRuecklagen >= 0 ? '#27ae60' : '#e74c3c');
+        
+        // Quartale generieren (ohne Kontostand)
         let quartersHTML = '';
         quarters.forEach(quarter => {
             if (quarter.hasData) {
@@ -315,7 +327,6 @@ function generateHTML(data, quarters) {
                                 <div class="detail-row"><span class="detail-label">Einnahmen:</span> <span class="detail-value detail-positive">${formatNumber(quarter.einnahmen)}€</span></div>
                                 <div class="detail-row"><span class="detail-label">Ausgaben:</span> <span class="detail-value detail-negative">${formatNumber(quarter.ausgaben)}€</span></div>
                                 <div class="detail-row"><span class="detail-label">Quartalsergebnis:</span> <span class="detail-value ${quarter.ergebnis >= 0 ? 'detail-positive' : 'detail-negative'}">${formatNumber(quarter.ergebnis)}€</span></div>
-                                <div class="detail-row"><span class="detail-label">Kontostand 2025:</span> <span class="detail-value">${formatNumber(quarter.kontostand)}€</span></div>
                             </div>
                         </div>
                     </div>
@@ -335,7 +346,6 @@ function generateHTML(data, quarters) {
                                 <div class="detail-row"><span class="detail-label">Einnahmen:</span> <span class="detail-value">Keine Daten</span></div>
                                 <div class="detail-row"><span class="detail-label">Ausgaben:</span> <span class="detail-value">Keine Daten</span></div>
                                 <div class="detail-row"><span class="detail-label">Quartalsergebnis:</span> <span class="detail-value">Keine Daten</span></div>
-                                <div class="detail-row"><span class="detail-label">Kontostand 2025:</span> <span class="detail-value">Keine Daten</span></div>
                             </div>
                         </div>
                     </div>
