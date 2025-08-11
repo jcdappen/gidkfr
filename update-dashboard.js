@@ -2,10 +2,6 @@
 const fs = require('fs');
 const Papa = require('papaparse');
 
-// update-dashboard.js
-const fs = require('fs');
-const Papa = require('papaparse');
-
 // CSV Datei lesen
 function readCSV() {
     try {
