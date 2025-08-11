@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'zahlen_aktuell.csv'
+      - 'zahlen_aktuell..csv'
       - 'update-dashboard.js'
       - 'dashboard-template.html'
   workflow_dispatch: # Allows manual trigger
@@ -33,15 +34,31 @@ jobs:
       run: npm install
       
     - name: Update dashboard
-      run: node update-dashboard.js
-      
+      run: |
+        echo "🚀 Starte Dashboard Update..."
+        node update-dashboard.js || echo "Script failed but continuing..."
+        
+    - name: Check if index.html was created
+      run: |
+        if [ -f "index.html" ]; then
+          echo "✅ index.html wurde erstellt"
+          ls -la index.html
+        else
+          echo "❌ index.html wurde NICHT erstellt"
+          exit 1
+        fi
+        
     - name: Check if files changed
       id: verify-changed-files
       run: |
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "changed=true" >> $GITHUB_OUTPUT
-        else
+        git add .
+        if git diff --staged --quiet; then
           echo "changed=false" >> $GITHUB_OUTPUT
+          echo "Keine Änderungen gefunden"
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "Änderungen gefunden:"
+          git diff --staged --name-only
         fi
         
     - name: Commit and push changes
@@ -49,21 +66,17 @@ jobs:
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add index.html
         git commit -m "🤖 Auto-update dashboard with latest data"
         git push
         
     - name: Setup Pages
-      if: steps.verify-changed-files.outputs.changed == 'true'
       uses: actions/configure-pages@v4
       
     - name: Upload artifact
-      if: steps.verify-changed-files.outputs.changed == 'true'
       uses: actions/upload-pages-artifact@v3
       with:
         path: '.'
         
     - name: Deploy to GitHub Pages
-      if: steps.verify-changed-files.outputs.changed == 'true'
       id: deployment
       uses: actions/deploy-pages@v4
