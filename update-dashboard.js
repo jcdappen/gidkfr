@@ -297,26 +297,62 @@ function generateHTML(data, quarters) {
         template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
         template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
         
-        // Barometer-Daten für Kontostand
-        const gesamtKontostand = data.kontostand[5] || 42547; // Letzter verfügbarer Kontostand
-        const vorherigerKontostand = data.kontostand[4] || 44530; // Vorheriger Monat
-        const trend = gesamtKontostand - vorherigerKontostand;
-        const trendPfeil = trend > 0 ? '↗' : trend < 0 ? '↘' : '→';
-        const trendColor = trend > 0 ? '#27ae60' : trend < 0 ? '#e74c3c' : '#f39c12';
-        const trendText = trend > 0 ? 'Steigend' : trend < 0 ? 'Fallend' : 'Stabil';
+        // Kontostand-Vergleich 2024 vs 2025
+        let kontostand2024RowIndex = -1;
+        for (let i = 0; i < csvData.length; i++) {
+            if (csvData[i][0] && csvData[i][0].toString().toLowerCase().includes('kontostand 24')) {
+                kontostand2024RowIndex = i;
+                break;
+            }
+        }
         
-        // Barometer-Prozent (basierend auf einem Zielwert oder Maximum)
-        const maxKontostand = 100000; // Zielwert für 100%
-        const kontoProzent = Math.max(0, Math.min(100, (gesamtKontostand / maxKontostand) * 100));
-        const kontoColor = gesamtKontostand >= 50000 ? '#27ae60' : gesamtKontostand >= 25000 ? '#f39c12' : '#e74c3c';
+        data.kontostand2024 = [];
+        if (kontostand2024RowIndex >= 0 && csvData[kontostand2024RowIndex]) {
+            const kontostand2024Row = csvData[kontostand2024RowIndex];
+            console.log('🏦 Kontostand 2024 Zeile gefunden bei Index', kontostand2024RowIndex, ':', kontostand2024Row);
+            for (let i = 1; i <= 12; i++) {
+                if (kontostand2024Row[i] !== undefined) {
+                    const value = parseGermanNumber(kontostand2024Row[i]);
+                    data.kontostand2024.push(value);
+                    if (data.kontostand2024.length >= 12) break;
+                }
+            }
+        } else {
+            console.log('⚠️ Kontostand 2024-Zeile nicht gefunden');
+            for (let i = 0; i < 12; i++) {
+                data.kontostand2024.push(0);
+            }
+        }
         
-        template = template.replace('{{KONTOSTAND}}', formatNumber(gesamtKontostand));
-        template = template.replace('{{KONTOSTAND_PROZENT}}', Math.round(kontoProzent));
-        template = template.replace('{{KONTOSTAND_COLOR}}', kontoColor);
-        template = template.replace('{{TREND_PFEIL}}', trendPfeil);
-        template = template.replace('{{TREND_COLOR}}', trendColor);
-        template = template.replace('{{TREND_TEXT}}', trendText);
-        template = template.replace('{{TREND_BETRAG}}', formatNumber(Math.abs(trend)));
+        while (data.kontostand2024.length < 12) {
+            data.kontostand2024.push(0);
+        }
+        
+        console.log('🏦 Kontostand 2024:', data.kontostand2024);
+        
+        // Gesamtsummen ersetzen
+        const gesamtErgebnis = data.gesamtEinnahmen - data.gesamtAusgaben;
+        template = template.replace('{{GESAMT_EINNAHMEN}}', formatNumber(data.gesamtEinnahmen));
+        template = template.replace('{{GESAMT_AUSGABEN}}', formatNumber(data.gesamtAusgaben));
+        template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
+        template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
+        
+        // Kontostand-Vergleichswerte
+        template = template.replace('{{KONTOSTAND_2024_Q1}}', formatNumber(data.kontostand2024[2])); // März 2024
+        template = template.replace('{{KONTOSTAND_2024_Q2}}', formatNumber(data.kontostand2024[5])); // Juni 2024
+        template = template.replace('{{KONTOSTAND_2025_Q1}}', formatNumber(data.kontostand[2])); // März 2025
+        template = template.replace('{{KONTOSTAND_2025_Q2}}', formatNumber(data.kontostand[5])); // Juni 2025
+        
+        // Differenzen berechnen
+        const diffQ1 = data.kontostand[2] - data.kontostand2024[2];
+        const diffQ2 = data.kontostand[5] - data.kontostand2024[5];
+        
+        template = template.replace('{{DIFF_Q1}}', formatNumber(Math.abs(diffQ1)));
+        template = template.replace('{{DIFF_Q2}}', formatNumber(Math.abs(diffQ2)));
+        template = template.replace('{{DIFF_Q1_CLASS}}', diffQ1 >= 0 ? 'positive' : 'negative');
+        template = template.replace('{{DIFF_Q2_CLASS}}', diffQ2 >= 0 ? 'positive' : 'negative');
+        template = template.replace('{{DIFF_Q1_SIGN}}', diffQ1 >= 0 ? '+' : '-');
+        template = template.replace('{{DIFF_Q2_SIGN}}', diffQ2 >= 0 ? '+' : '-');
         
         // Quartale generieren (ohne Kontostand)
         let quartersHTML = '';
