@@ -354,7 +354,38 @@ function generateHTML(data, quarters) {
         template = template.replace('{{DIFF_Q1_SIGN}}', diffQ1 >= 0 ? '+' : '-');
         template = template.replace('{{DIFF_Q2_SIGN}}', diffQ2 >= 0 ? '+' : '-');
         
-        // Quartale generieren (ohne Kontostand)
+        // Gesamtsummen ersetzen
+        const gesamtErgebnis = data.gesamtEinnahmen - data.gesamtAusgaben;
+        template = template.replace('{{GESAMT_EINNAHMEN}}', formatNumber(data.gesamtEinnahmen));
+        template = template.replace('{{GESAMT_AUSGABEN}}', formatNumber(data.gesamtAusgaben));
+        template = template.replace('{{AKTUELLES_ERGEBNIS}}', formatNumber(gesamtErgebnis));
+        template = template.replace('{{RESULT_CLASS}}', gesamtErgebnis >= 0 ? 'result-positive' : 'result-negative');
+        
+        // Kontostand-Vergleichswerte
+        console.log('🔧 Setze Kontostand-Vergleichswerte...');
+        console.log('2024 Q1 (März):', data.kontostand2024[2]);
+        console.log('2024 Q2 (Juni):', data.kontostand2024[5]);
+        console.log('2025 Q1 (März):', data.kontostand[2]);
+        console.log('2025 Q2 (Juni):', data.kontostand[5]);
+        
+        template = template.replace('{{KONTOSTAND_2024_Q1}}', formatNumber(data.kontostand2024[2])); // März 2024
+        template = template.replace('{{KONTOSTAND_2024_Q2}}', formatNumber(data.kontostand2024[5])); // Juni 2024
+        template = template.replace('{{KONTOSTAND_2025_Q1}}', formatNumber(data.kontostand[2])); // März 2025
+        template = template.replace('{{KONTOSTAND_2025_Q2}}', formatNumber(data.kontostand[5])); // Juni 2025
+        
+        // Differenzen berechnen
+        const diffQ1 = data.kontostand[2] - data.kontostand2024[2];
+        const diffQ2 = data.kontostand[5] - data.kontostand2024[5];
+        
+        console.log('Differenz Q1:', diffQ1);
+        console.log('Differenz Q2:', diffQ2);
+        
+        template = template.replace('{{DIFF_Q1}}', formatNumber(Math.abs(diffQ1)));
+        template = template.replace('{{DIFF_Q2}}', formatNumber(Math.abs(diffQ2)));
+        template = template.replace('{{DIFF_Q1_CLASS}}', diffQ1 >= 0 ? 'positive' : 'negative');
+        template = template.replace('{{DIFF_Q2_CLASS}}', diffQ2 >= 0 ? 'positive' : 'negative');
+        template = template.replace('{{DIFF_Q1_SIGN}}', diffQ1 >= 0 ? '+' : '-');
+        template = template.replace('{{DIFF_Q2_SIGN}}', diffQ2 >= 0 ? '+' : '-');
         let quartersHTML = '';
         quarters.forEach(quarter => {
             if (quarter.hasData) {
